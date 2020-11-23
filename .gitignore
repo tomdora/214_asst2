@@ -2,6 +2,8 @@
 a.txt
 stuff/
 all/
+detector
+tokenizer
 
 # Prerequisites
 *.d
