@@ -8,8 +8,8 @@
 #include <unistd.h>
 
 //Function to actually recursively look through 
-void dirRecurse(char * dir){
-	DIR * dir = opendir(dir);
+void dirRecurse(char * inputDir){
+	DIR * dir = opendir(inputDir);
 	
 	//Check to make sure the opendir() worked
 	if(dir == NULL) return;
@@ -21,7 +21,7 @@ void dirRecurse(char * dir){
 		//Check to see if the file is a regular file, print the path, file name, and file length in green
 		if(dirRead->d_type == DT_REG){
 			
-			strcpy(path, dir);
+			strcpy(path, inputDir);
 			strcat(path, "/");
 			strcat(path, dirRead->d_name);
 			
@@ -38,7 +38,7 @@ void dirRecurse(char * dir){
 		} else if(dirRead->d_type == DT_DIR){
 			//If it is, check to see if it's the current or previous directory and ignore them (".", "..", respectively), then print the path
 			if(strcmp(dirRead->d_name, ".") != 0 && strcmp(dirRead->d_name, "..") != 0){
-				strcpy(path, dir);
+				strcpy(path, inputDir);
 				strcat(path, "/");
 				strcat(path, dirRead->d_name);
 				
