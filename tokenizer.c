@@ -5,8 +5,7 @@
 
 //struct for the linked list Node
 typedef struct Node{
-	char * data;
-	char * type;
+	void * data;
 	struct Node * next;
 } Node;
 
