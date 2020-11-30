@@ -42,9 +42,15 @@ typedef struct Token{
 
 FileList * listHead = NULL;
 
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 //	tokenizing code starts here
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
 //Function to actually create a Token node
 Token * createToken(char * token, Token * head){
@@ -225,6 +231,7 @@ void printList(){
 }
 
 
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //	tokenizing code ends here, directory travel and file management code starts here
@@ -237,9 +244,7 @@ void printList(){
 void * openFile(void * master){
 	int id = rand();
 	
-	printf("\033[1;31m");
-	printf("	Thread %d opening file %s\n", id, ((Master*)master)->path);
-	printf("\033[0m");
+	//printf("\033[1;31m	Thread %d opening file %s \033[0m\n", id, ((Master*)master)->path);
 	
 	//Open the file and lseek to find the file length
 	FILE * fd = fopen(((Master*)master)->path, "r");
@@ -253,9 +258,7 @@ void * openFile(void * master){
 	
 	rewind(fd);
 	
-	printf("\033[0;36m");
-	printf("	%s : %dB, thread %d\n", ((Master*)master)->path, fileSize, id);
-	printf("\033[0m");
+	printf("\033[0;36m	%s : %dB, thread %d \033[0m\n", ((Master*)master)->path, fileSize, id);
 	
 	Token * tokenHead = malloc(sizeof(Token));
 	tokenHead = tokenize(fd, fileSize);
@@ -299,6 +302,22 @@ void * openFile(void * master){
 
 
 
+//Function to create a copy of a Master node 
+Master * mascpy(Master * master, Master * cpy, char * name){
+	cpy->mutex = ((Master*)master)->mutex;
+	cpy->path = malloc(1000);
+	cpy->next = NULL;
+	
+	strcpy(cpy->path, ((Master*)master)->path);
+	if(cpy->path[strlen(cpy->path) - 1] != '/') strcat(cpy->path, "/");
+	strcat(cpy->path, name);
+	
+	return cpy;
+}
+
+
+
+
 
 //Function to actually recursively look through directories
 void * dirTravel(void * master){
@@ -306,10 +325,8 @@ void * dirTravel(void * master){
 	//strcpy(inputPath, inputDir);
 	int id = rand();
 	
-	printf("\033[1;31m");
-	printf("%d opening directory %s\n", id, ((Master*)master)->path);
+	printf("\033[1;31m%d opening directory %s \033[0m\n", id, ((Master*)master)->path);
 	//printf("Thread %d opening directory %s\n", id, inputPath);
-	printf("\033[0m");
 	
 	DIR * dir = opendir(((Master*)master)->path);
 	
@@ -320,28 +337,19 @@ void * dirTravel(void * master){
 		return NULL;
 	}
 	
-	printf("\033[1;31m");
-	printf("- %d opened %s\n", id, ((Master*)master)->path);
-	printf("\033[0m");
+	printf("\033[1;31m- %d opened %s \033[0m\n", id, ((Master*)master)->path);
 	
 	//Create a linked list to store all threads
 	ThreadList * threadHead = NULL;
-	
-	//Create a string to hold the path, a dirent struct for readdir, and loop while there's more to read within the directory
-	Master * newMaster = malloc(sizeof(Master));
-	newMaster->mutex = ((Master*)master)->mutex;
-	newMaster->path = malloc(1000);
-	newMaster->next = NULL;
 	
 	struct dirent * dirRead = malloc(sizeof(struct dirent));
 	while((dirRead = readdir(dir)) != NULL){
 		//printf("Top of while loop\n");
 		//Check to see if the file is a regular file, print the path, file name, and file length in green
 		if(dirRead->d_type == DT_REG){
-			//printf("if\n");
-			strcpy(newMaster->path, ((Master*)master)->path);
-			if(newMaster->path[strlen(newMaster->path)] != '/') strcat(newMaster->path, "/");
-			strcat(newMaster->path, dirRead->d_name);
+			//Create a copy of the master node for the new thread
+			Master * newMaster = malloc(sizeof(Master));
+			newMaster = mascpy(master, newMaster, dirRead->d_name);
 			
 			pthread_t * thread = malloc(sizeof(pthread_t));
 			
@@ -349,29 +357,23 @@ void * dirTravel(void * master){
 			if(threadHead == NULL){
 				threadHead = malloc(sizeof(ThreadList));
 				
-				//threadHead->data = malloc(sizeof(pthread_t));
 				threadHead->thread = thread;
 				threadHead->next = NULL;
 				
 				pthread_create(thread, NULL, openFile, newMaster);
-				pthread_join(*thread, NULL);
-				//printf("Thread %s creating new thread %s\n", (char*)inputDir, path);
 				
 			} else{	//else we need to create a new node
-				//printf("New node started : %s --- ", (char*)inputDir);
 				ThreadList * newThread = malloc(sizeof(ThreadList));
 				
-				newThread->next = threadHead;
-				threadHead = newThread;
+				ThreadList * i = threadHead;
+				while(i->next != NULL) i = i->next;
 				
-				//new->data = malloc(sizeof(pthread_t));
+				i->next = newThread;
+				
 				newThread->thread = thread;
 				newThread->next = NULL;
 				
 				pthread_create(thread, NULL, openFile, newMaster);
-				pthread_join(*thread, NULL);
-				//printf("Thread %s creating new thread %s\n", (char*)inputDir, path);
-				
 			}
 			
 			//Check to see if it's a directory at all
@@ -379,14 +381,11 @@ void * dirTravel(void * master){
 			//printf("else if\n");
 			//If it is, check to see if it's the current or previous directory and ignore them (".", "..", respectively), then print the path
 			if(strcmp(dirRead->d_name, ".") != 0 && strcmp(dirRead->d_name, "..") != 0){
-				//printf("else if if\n");
-				strcpy(newMaster->path, ((Master*)master)->path);
-				if(newMaster->path[strlen(newMaster->path)] != '/') strcat(newMaster->path, "/");
-				strcat(newMaster->path, dirRead->d_name);
+				//Create a copy of the master node for the new thread
+				Master * newMaster = malloc(sizeof(Master));
+				newMaster = mascpy(master, newMaster, dirRead->d_name);
 				
-				printf("\033[0;33m");
-				printf("	%s, thread %d\n", newMaster->path, id);
-				printf("\033[0m");
+				printf("\033[0;33m	%s, thread %d \033[0m\n", newMaster->path, id);
 				
 				pthread_t * thread = malloc(sizeof(pthread_t));
 				
@@ -399,23 +398,19 @@ void * dirTravel(void * master){
 					threadHead->next = NULL;
 					
 					pthread_create(thread, NULL, dirTravel, newMaster);
-					pthread_join(*thread, NULL);
-					//printf("Thread %s creating new thread %s\n", (char*)inputDir, path);
 					
 				} else{	//else we need to create a new node
-					//printf("New node started : %s --- ", (char*)inputDir);
 					ThreadList * newThread = malloc(sizeof(ThreadList));
 					
-					newThread->next = threadHead;
-					threadHead = newThread;
+					ThreadList * i = threadHead;
+					while(i->next != NULL) i = i->next;
 					
-					//new->data = malloc(sizeof(pthread_t));
+					i->next = newThread;
+					
 					newThread->thread = thread;
 					newThread->next = NULL;
 					
 					pthread_create(thread, NULL, dirTravel, newMaster);
-					pthread_join(*thread, NULL);
-					//printf("Thread %s creating new thread %s\n", (char*)inputDir, path);
 					
 				}
 			}
@@ -426,9 +421,9 @@ void * dirTravel(void * master){
 	//Create a while loop to join every thread in the list as long as the head isn't NULL
 	while(threadHead != NULL){
 		iterator = threadHead;
-		threadHead = threadHead->next;
+		threadHead = iterator->next;
 		
-		//pthread_join(*iterator->thread, NULL);
+		pthread_join(*iterator->thread, NULL);
 		free(iterator->thread);
 		free(iterator);
 	}
@@ -453,7 +448,7 @@ int main(int argc, char * argv[]){
 		Master * master = malloc(sizeof(Master));
 		master->mutex = &mutex;
 		
-		master->path = malloc(strlen(argv[1] + 1));
+		master->path = malloc(strlen(argv[1]) + 1);
 		strcpy(master->path, argv[1]);
 		
 		master->next = NULL;
@@ -462,10 +457,12 @@ int main(int argc, char * argv[]){
 		pthread_t thread;
 		pthread_create(&thread, NULL, dirTravel, master);
 		
+		//sleep(1);
+		
 		//Join the thread once it's done
 		pthread_join(thread, NULL);
 		
-		//printList();
+		printList();
 		
 	} else printf("Incorrect number of inputs. Program expects a single directory path as stdin.\n");
 	
