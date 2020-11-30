@@ -24,15 +24,12 @@ typedef struct Token{
 	struct Token * next;
 } Token;
 
-int runtimes = 0;
-
 //	tokenizing code starts here
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //Function to actually create a Token node
 Token * createToken(char * token, Token * head){
-	runtimes++;
 	//If no head exists, we create the head node
 	if(head == NULL){
 		//printf("Head is null.\n");
@@ -43,7 +40,7 @@ Token * createToken(char * token, Token * head){
 			return NULL;
 		} else{
 			//Malloc space for data + 1; also need to catch if malloc returns NULL
-			if((head->data = malloc(sizeof(token) + 1)) == NULL){
+			if((head->data = malloc(strlen(token) + 1)) == NULL){
 				return NULL;
 			} else{
 				//Copy data over to the head and set the number of times the token's shown up to 1
@@ -60,7 +57,9 @@ Token * createToken(char * token, Token * head){
 		//We're going to check for alphabetical order and make our list alphabetical from the start
 		Token * next = head;
 		Token * prev = head;
+		
 		while(next != NULL && strcmp(token, next->data) > 0){
+			//printf("Token: %s, next->data: %s, strcmp: %d\n", token, next->data, strcmp(token, next->data));
 			prev = next;
 			next = next->next;
 		}
@@ -72,33 +71,47 @@ Token * createToken(char * token, Token * head){
 			return head;
 		}
 		
-		//Else we know that the token needs to go in-between the "prev" token and the "next" token
+		//Else we know that the token needs to be inserted into the list
 		else{
 			Token * new = malloc(sizeof(Token));
 			if(new == NULL){
 				return NULL;
 			}
 			else{
-				//Malloc space for data + 1, catch if malloc returns NULL
-				if((new->data = malloc(sizeof(token) + 1)) == NULL){
-					return NULL;
-				} else{
-					//Make sure that the head node doesn't need to change
-					
-					//Copy data over to the new and set the number of times the token's shown up to 1
+				//Check if the next node is the same as the head node; if so, they're the same node
+				if(next != NULL && strcmp(next->data, head->data) == 0){
+					//We need to insert the new node to the "left" of the head node and make it the new head node
+					//In other words, we need to turn the new node into the head node, and make the head node the next node
+					new->data = malloc(strlen(token) + 1);
 					strcpy(new->data, token);
+					
 					new->number = 1;
 					
-					//Point previous node to new node, new node to next node. Make sure next node isn't NULL
-					prev->next = new;
+					new->next = head;
 					
-					if(next != NULL){
-						new->next = next;
+					return new;
+				}
+				//Head node is fine as the first node, we can keep moving
+				else{
+					//Malloc space for data + 1, catch if malloc returns NULL
+					if((new->data = malloc(strlen(token) + 1)) == NULL){
+						return NULL;
 					} else{
-						new->next = NULL;
+						//Copy data over to the new and set the number of times the token's shown up to 1
+						strcpy(new->data, token);
+						new->number = 1;
+						
+						//Point previous node to new node, new node to next node. Make sure next node isn't NULL
+						prev->next = new;
+						
+						if(next != NULL){
+							new->next = next;
+						} else{
+							new->next = NULL;
+						}
+						
+						return head;
 					}
-					
-					return head;
 				}
 			}
 		}
