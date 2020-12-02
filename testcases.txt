@@ -11,9 +11,11 @@ Testcase #2:
 	This time, the program opens up subdirectories recursively until it gets to subdirectory "stuff/all/the/stuff" and opens up a file within the subdirectory there.
 	
 Testcase #3: 
-	./detector stuff
+	./detector stuff/example
 	
-	Within the stuff directory, there exists an executable a.out. This is tokenized without issue.
+	Within this directory is "b.txt" and "c.txt"
+	b.txt contains "hello there hello there" and c.txt contains "hello hello out there"
+	The JSD for these two files results to 0.046852, which is the same once rounded as the value shown in the assignment 2 PDF. The line is printed red.
 	
 Testcase #4:
 	./detector stuff/all/forbidden
@@ -23,4 +25,4 @@ Testcase #4:
 Testcase #5:
 	./detector ~/Documents
 	
-	The detector is allowed to go through the entire Documents folder on my local machine, and everything within is tokenized without issue or segfault, though it takes a few moments to finish.
+	The detector is allowed to go through the entire Documents folder on my local machine (1,205 valid and non-empty files), and everything within is tokenized and compared. It takes a few minutes to run, but no segfaults occur. The resulting output for the JSD values is properly sorted by shared tokens and color-coded via JSD value.

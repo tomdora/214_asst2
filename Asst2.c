@@ -632,22 +632,22 @@ Distance * calcJSD(Distance * jsd){
 void printJSD(Distance * jsd, unsigned int numberComp){
 	for(int i = 0; i < numberComp; i++){
 		if(jsd[i].distance <= .1){
-			printf("\033[31m%f %s and %s; shared tokens = %d\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2, jsd[i].shared);
+			printf("\033[31m%f %s and %s\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2);
 		}
 		else if(jsd[i].distance <= .15){
-			printf("\033[33m%f %s and %s; shared tokens = %d\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2, jsd[i].shared);
+			printf("\033[33m%f %s and %s\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2);
 		}
 		else if(jsd[i].distance <= .2){
-			printf("\033[32m%f %s and %s; shared tokens = %d\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2, jsd[i].shared);
+			printf("\033[32m%f %s and %s\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2);
 		}
 		else if(jsd[i].distance <= .25){
-			printf("\033[36m%f %s and %s; shared tokens = %d\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2, jsd[i].shared);
+			printf("\033[36m%f %s and %s\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2);
 		}
 		else if(jsd[i].distance <= .3){
-			printf("\033[34m%f %s and %s; shared tokens = %d\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2, jsd[i].shared);
+			printf("\033[34m%f %s and %s\033[0m\n", jsd[i].distance, jsd[i].file1, jsd[i].file2);
 		}
 		else{
-			printf("%f %s and %s; shared tokens = %d\n", jsd[i].distance, jsd[i].file1, jsd[i].file2, jsd[i].shared);
+			printf("%f %s and %s\n", jsd[i].distance, jsd[i].file1, jsd[i].file2);
 		}
 	}
 	
@@ -715,6 +715,10 @@ int main(int argc, char * argv[]){
 		qsort(jsd, numberComp, sizeof(Distance), sortComp);
 		
 		printJSD(jsd, numberComp);
+		
+		free(jsd);
+		free(master->path);
+		free(master);
 		
 	} else printf("Incorrect number of inputs. Program expects a single directory path in stdin.\n");
 	
